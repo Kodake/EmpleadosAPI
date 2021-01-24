@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BackEnd;
 using BackEnd.Models;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BackEnd.Controllers
 {
@@ -28,83 +29,25 @@ namespace BackEnd.Controllers
             return await _context.Empleado.ToListAsync();
         }
 
-        // GET: api/Empleado/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Empleado>> GetEmpleado(int id)
+        // GET: api/Empleado
+        [HttpGet("list")]
+        public IActionResult GetEmpleadoPaginated([FromQuery] string searchText, [FromQuery] int? page, [FromQuery] int pageSize = 5)
         {
-            var empleado = await _context.Empleado.FindAsync(id);
+            var query = string.IsNullOrEmpty(searchText) ? _context.Empleado
+                               : _context.Empleado.Where(e =>
+                                e.Nombre.ToLower().Contains(searchText.ToLower()) ||
+                                e.Apellido.ToLower().Contains(searchText.ToLower()));
 
-            if (empleado == null)
+            int totalCount = query.Count();
+
+            PageResult<Empleado> result = new PageResult<Empleado>
             {
-                return NotFound();
-            }
-
-            return empleado;
-        }
-
-        // PUT: api/Empleado/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmpleado(int id, Empleado empleado)
-        {
-            if (id != empleado.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(empleado).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!EmpleadoExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Empleado
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPost]
-        public async Task<ActionResult<Empleado>> PostEmpleado(Empleado empleado)
-        {
-            _context.Empleado.Add(empleado);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetEmpleado", new { id = empleado.Id }, empleado);
-        }
-
-        // DELETE: api/Empleado/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Empleado>> DeleteEmpleado(int id)
-        {
-            var empleado = await _context.Empleado.FindAsync(id);
-            if (empleado == null)
-            {
-                return NotFound();
-            }
-
-            _context.Empleado.Remove(empleado);
-            await _context.SaveChangesAsync();
-
-            return empleado;
-        }
-
-        private bool EmpleadoExists(int id)
-        {
-            return _context.Empleado.Any(e => e.Id == id);
+                Count = totalCount,
+                PageIndex = page ?? 1,
+                PageSize = pageSize,
+                Items = query.Skip((page - 1 ?? 0) * pageSize).Take(pageSize).ToList()
+            };
+            return Ok(result);
         }
     }
 }
