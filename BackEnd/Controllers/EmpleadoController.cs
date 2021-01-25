@@ -40,6 +40,17 @@ namespace BackEnd.Controllers
 
             int totalCount = query.Count();
 
+            double totalSalaries = (double)_context.Empleado
+                .Select(x => x.Salario).Sum();
+
+            double femaleSalaries = (double)_context.Empleado
+                .Where(y => y.Genero == "Femenino")
+                .Select(x => x.Salario).Sum();
+
+            double maleSalaries = (double)_context.Empleado
+                .Where(y => y.Genero == "Masculino")
+                .Select(x => x.Salario).Sum();
+
             PageResult<Empleado> result = new PageResult<Empleado>
             {
                 Count = totalCount,
