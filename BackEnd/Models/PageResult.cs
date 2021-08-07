@@ -11,5 +11,8 @@ namespace BackEnd.Models
         public int PageIndex { get; set; }
         public int PageSize { get; set; }
         public List<T> Items { get; set; }
+        public double TotalSalaries { get; set; }
+        public double FemaleSalaries { get; set; }
+        public double MaleSalaries { get; set; }
     }
 }

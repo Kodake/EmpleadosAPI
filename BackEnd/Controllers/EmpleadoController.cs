@@ -56,7 +56,10 @@ namespace BackEnd.Controllers
                 Count = totalCount,
                 PageIndex = page ?? 1,
                 PageSize = pageSize,
-                Items = query.Skip((page - 1 ?? 0) * pageSize).Take(pageSize).ToList()
+                Items = query.Skip((page - 1 ?? 0) * pageSize).Take(pageSize).ToList(),
+                TotalSalaries = totalSalaries,
+                FemaleSalaries = femaleSalaries,
+                MaleSalaries = maleSalaries
             };
             return Ok(result);
         }
